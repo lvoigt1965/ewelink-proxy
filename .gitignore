@@ -3,7 +3,9 @@ __pycache__/
 *.pyo
 venv/
 .venv/
+ewelink-venv/
 *.egg-info/
 .env
 *.log
 state.json
+server.log
