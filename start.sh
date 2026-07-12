@@ -1,6 +1,6 @@
 #!/bin/bash
-# eWeLink Webhook Proxy — Startup Script
-# Run this on the host Ubuntu server
+# eWeLink Webhook Proxy — Host Startup Script
+# Run this on the host Ubuntu terminal
 
 PORT=8182
 PROJ_DIR="$(cd "$(dirname "$0")" && pwd)"
