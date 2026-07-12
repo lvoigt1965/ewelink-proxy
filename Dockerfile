@@ -7,7 +7,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app.py .
 COPY templates/ ./templates/
-COPY static/ ./static/
 
 # Default config — mount your own config.yaml to override
 COPY config.yaml ./config.yaml
