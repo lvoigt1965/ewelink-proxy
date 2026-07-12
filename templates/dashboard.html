@@ -6,106 +6,420 @@
     <title>eWeLink Webhook Proxy</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0f172a; --surface: #1e293b; --border: #334155;
+            --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8;
+            --green: #4ade80; --red: #f87171; --yellow: #fbbf24;
+            --purple: #a78bfa;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
-            min-height: 100vh;
-            padding: 2rem;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; padding: 1.5rem;
         }
-        h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
-        .subtitle { color: #94a3b8; font-size: 0.875rem; margin-bottom: 2rem; }
+        h1 { font-size: 1.5rem; }
+        .subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .stats-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .stat-box {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 8px; padding: 0.75rem 1.25rem; text-align: center;
+        }
+        .stat-num { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+        .stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; }
+        .btn {
+            border: none; border-radius: 6px; padding: 0.4rem 0.8rem;
+            font-size: 0.8rem; cursor: pointer; transition: opacity 0.15s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-primary { background: var(--accent); color: var(--bg); }
+        .btn-danger { background: var(--red); color: white; }
+        .btn-success { background: var(--green); color: var(--bg); }
+        .btn-ghost { background: var(--border); color: var(--text); }
+        .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
         .card {
-            background: #1e293b;
-            border-radius: 12px;
-            padding: 1.25rem 1.5rem;
-            margin-bottom: 1rem;
-            border: 1px solid #334155;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; margin-bottom: 1rem; overflow: hidden;
         }
         .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 0.75rem 1.25rem; display: flex; justify-content: space-between;
+            align-items: center; border-bottom: 1px solid var(--border);
+        }
+        .device-name { font-size: 1.1rem; font-weight: 600; color: var(--accent); }
+        .card-body { padding: 1rem 1.25rem; }
+        .badge {
+            font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 999px;
+            background: var(--border); color: var(--muted);
+        }
+        select, input, textarea {
+            background: var(--bg); border: 1px solid var(--border);
+            color: var(--text); border-radius: 6px; padding: 0.35rem 0.6rem;
+            font-size: 0.8rem; outline: none;
+        }
+        select:focus, input:focus, textarea:focus { border-color: var(--accent); }
+        .action-block {
+            background: var(--bg); border-radius: 8px; padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem; border: 1px solid var(--border);
+        }
+        .action-header {
+            display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 0.5rem;
         }
-        .device-name {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #38bdf8;
+        .action-name { font-weight: 600; color: var(--green); font-size: 0.9rem; }
+        .webhook-row {
+            display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0;
+            font-size: 0.78rem; color: var(--muted);
         }
-        .badge {
-            font-size: 0.75rem;
-            padding: 0.2rem 0.6rem;
-            border-radius: 999px;
-            background: #334155;
-            color: #cbd5e1;
+        .webhook-url {
+            flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            font-family: monospace; font-size: 0.75rem;
         }
-        .action-row {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 0.4rem 0;
-            font-size: 0.875rem;
+        .webhook-idx { color: var(--yellow); font-size: 0.7rem; min-width: 30px; }
+        .add-row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
+        .add-row input { flex: 1; }
+        .empty { color: var(--muted); font-style: italic; padding: 0.5rem 0; font-size: 0.85rem; }
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 100; justify-content: center; align-items: center;
         }
-        .action-name {
-            font-weight: 600;
-            color: #4ade80;
-            min-width: 60px;
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+            padding: 1.5rem; width: 90%; max-width: 450px;
         }
-        .webhook-count { color: #94a3b8; }
-        .next-idx { color: #fbbf24; }
-        .stats {
-            display: flex;
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
+        .modal h2 { font-size: 1.1rem; margin-bottom: 1rem; }
+        .modal-field { margin-bottom: 1rem; }
+        .modal-field label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.3rem; }
+        .modal-field input, .modal-field select { width: 100%; }
+        .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+        .history-card { max-height: 350px; overflow-y: auto; }
+        .history-row {
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.4rem 0;
+            border-bottom: 1px solid var(--border); font-size: 0.75rem;
         }
-        .stat-box {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            padding: 1rem 1.5rem;
-            text-align: center;
+        .history-row:last-child { border-bottom: none; }
+        .history-time { color: var(--muted); min-width: 130px; font-family: monospace; }
+        .history-device { color: var(--accent); min-width: 80px; font-weight: 600; }
+        .history-action { color: var(--green); min-width: 50px; }
+        .history-status { min-width: 30px; font-weight: 700; }
+        .status-ok { color: var(--green); }
+        .status-fail { color: var(--red); }
+        .history-webhook { color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; }
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .tab {
+            padding: 0.4rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+            background: var(--surface); border: 1px solid var(--border); color: var(--muted);
         }
-        .stat-num { font-size: 1.5rem; font-weight: 700; color: #38bdf8; }
-        .stat-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; }
-        code {
-            background: #334155;
-            padding: 0.15rem 0.4rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            color: #f1f5f9;
+        .tab.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .toast {
+            position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--surface);
+            border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1.25rem;
+            font-size: 0.85rem; z-index: 200; opacity: 0; transform: translateY(10px);
+            transition: all 0.25s;
         }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { border-color: var(--green); color: var(--green); }
+        .toast.error { border-color: var(--red); color: var(--red); }
     </style>
 </head>
 <body>
-    <h1>⚡ eWeLink Webhook Proxy</h1>
-    <p class="subtitle">Load-balancing proxy for eWeLink device webhooks</p>
+    <div class="header">
+        <div>
+            <h1>⚡ eWeLink Webhook Proxy</h1>
+            <p class="subtitle">Load-balancing proxy for eWeLink device webhooks</p>
+        </div>
+        <button class="btn btn-primary" onclick="openAddDeviceModal()">+ Add Device</button>
+    </div>
 
-    <div class="stats">
-        <div class="stat-box">
-            <div class="stat-num">{{ total_devices }}</div>
-            <div class="stat-label">Devices</div>
+    <div class="stats-row">
+        <div class="stat-box"><div class="stat-num" id="stat-devices">0</div><div class="stat-label">Devices</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-webhooks">0</div><div class="stat-label">Webhooks</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-triggers">0</div><div class="stat-label">Recent Triggers</div></div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('devices')">Devices</div>
+        <div class="tab" onclick="switchTab('history')">History</div>
+    </div>
+
+    <div id="tab-devices" class="tab-content active">
+        <div id="device-list"></div>
+        <div id="devices-empty" class="empty" style="display:none">No devices configured. Click "Add Device" to get started.</div>
+    </div>
+
+    <div id="tab-history" class="tab-content">
+        <div class="card history-card">
+            <div class="card-header"><span class="device-name">Trigger History</span></div>
+            <div class="card-body" id="history-list"></div>
         </div>
     </div>
 
-    {% for d in devices %}
-    <div class="card">
-        <div class="card-header">
-            <span class="device-name">{{ d.device }} / {{ d.action }}</span>
-            <span class="badge">{{ d.strategy }}</span>
-        </div>
-        <div class="action-row">
-            <span class="action-name">{{ d.action }}</span>
-            <span class="webhook-count">{{ d.count }} webhook(s)</span>
-            <span class="next-idx">next: #{{ d.next_index }}</span>
+    <!-- Add Device Modal -->
+    <div class="modal-overlay" id="modal-add-device">
+        <div class="modal">
+            <h2>Add Device</h2>
+            <div class="modal-field">
+                <label>Device Name</label>
+                <input type="text" id="new-device-name" placeholder="e.g. lamp, fan, heater" onkeydown="if(event.key==='Enter')addDevice()">
+            </div>
+            <div class="modal-field">
+                <label>Strategy</label>
+                <select id="new-device-strategy">
+                    <option value="round-robin">Round-Robin (even distribution)</option>
+                    <option value="random">Random</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeModal('modal-add-device')">Cancel</button>
+                <button class="btn btn-primary" onclick="addDevice()">Add Device</button>
+            </div>
         </div>
     </div>
-    {% endfor %}
 
-    {% if not devices %}
-    <div class="card">
-        <p>No devices configured. Edit <code>config.yaml</code> and reload.</p>
+    <!-- Add Webhook Modal -->
+    <div class="modal-overlay" id="modal-add-webhook">
+        <div class="modal">
+            <h2>Add Webhook</h2>
+            <div class="modal-field">
+                <label>Device</label>
+                <input type="text" id="wh-device" readonly style="opacity:0.6">
+            </div>
+            <div class="modal-field">
+                <label>Action (on, off, toggle, etc.)</label>
+                <input type="text" id="wh-action" placeholder="e.g. on, off" onkeydown="if(event.key==='Enter')addWebhook()">
+            </div>
+            <div class="modal-field">
+                <label>eWeLink Webhook URL</label>
+                <input type="text" id="wh-url" placeholder="https://api.ewelink.com/webhook/..." onkeydown="if(event.key==='Enter')addWebhook()">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeModal('modal-add-webhook')">Cancel</button>
+                <button class="btn btn-primary" onclick="addWebhook()">Add Webhook</button>
+            </div>
+        </div>
     </div>
-    {% endif %}
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    let currentDevices = {};
+    let addWebhookDevice = '';
+
+    async function api(method, path, body) {
+        const opts = { method, headers: {} };
+        if (body) {
+            opts.headers['Content-Type'] = 'application/json';
+            opts.body = JSON.stringify(body);
+        }
+        const resp = await fetch(path, opts);
+        return resp.json();
+    }
+
+    function toast(msg, type) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.className = 'toast ' + (type || '');
+        setTimeout(() => el.classList.add('show'), 10);
+        setTimeout(() => el.classList.remove('show'), 2500);
+    }
+
+    function switchTab(name) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById('tab-' + name).classList.add('active');
+        if (name === 'history') loadHistory();
+    }
+
+    function openAddDeviceModal() {
+        document.getElementById('new-device-name').value = '';
+        document.getElementById('modal-add-device').classList.add('active');
+        document.getElementById('new-device-name').focus();
+    }
+
+    function openAddWebhookModal(device) {
+        addWebhookDevice = device;
+        document.getElementById('wh-device').value = device;
+        document.getElementById('wh-action').value = '';
+        document.getElementById('wh-url').value = '';
+        document.getElementById('modal-add-webhook').classList.add('active');
+        document.getElementById('wh-action').focus();
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+
+    async function addDevice() {
+        const name = document.getElementById('new-device-name').value.trim();
+        const strategy = document.getElementById('new-device-strategy').value;
+        if (!name) { toast('Enter a device name', 'error'); return; }
+        const r = await api('POST', '/api/devices', { name, strategy });
+        if (r.ok) {
+            toast('Device added', 'success');
+            closeModal('modal-add-device');
+            loadDevices();
+        } else {
+            toast(r.detail || 'Error', 'error');
+        }
+    }
+
+    async function deleteDevice(name) {
+        if (!confirm(`Delete device "${name}" and all its webhooks?`)) return;
+        const r = await api('DELETE', `/api/devices/${name}`);
+        if (r.ok) { toast('Device deleted', 'success'); loadDevices(); }
+        else toast(r.detail || 'Error', 'error');
+    }
+
+    async function addWebhook() {
+        const device = document.getElementById('wh-device').value;
+        const action = document.getElementById('wh-action').value.trim();
+        const url = document.getElementById('wh-url').value.trim();
+        if (!action) { toast('Enter an action', 'error'); return; }
+        if (!url) { toast('Enter a webhook URL', 'error'); return; }
+        const r = await api('POST', `/api/devices/${device}/${action}/webhooks`, { url });
+        if (r.ok) {
+            toast('Webhook added', 'success');
+            closeModal('modal-add-webhook');
+            loadDevices();
+        } else {
+            toast(r.detail || 'Error', 'error');
+        }
+    }
+
+    async function removeWebhook(device, action, url) {
+        if (!confirm('Remove this webhook?')) return;
+        const r = await api('DELETE', `/api/devices/${device}/${action}/webhooks?url=` + encodeURIComponent(url));
+        if (r.ok) { toast('Webhook removed', 'success'); loadDevices(); }
+        else toast(r.detail || 'Error', 'error');
+    }
+
+    async function changeStrategy(device, strategy) {
+        const r = await api('PUT', `/api/devices/${device}/strategy`, { strategy });
+        if (r.ok) { toast('Strategy updated', 'success'); loadDevices(); }
+        else toast(r.detail || 'Error', 'error');
+    }
+
+    async function triggerDevice(device, action) {
+        const r = await api('GET', `/trigger/${device}/${action}`);
+        if (r.ok) {
+            toast(`✅ ${device}/${action} → webhook #${r.index + 1} (HTTP ${r.ewelink_status})`, 'success');
+        } else {
+            toast(`❌ ${device}/${action} failed: ${r.error || r.detail}`, 'error');
+        }
+        loadDevices();
+    }
+
+    async function loadDevices() {
+        const data = await api('GET', '/api/devices');
+        currentDevices = data;
+        const list = document.getElementById('device-list');
+        const empty = document.getElementById('devices-empty');
+        list.innerHTML = '';
+        let totalHooks = 0;
+
+        const names = Object.keys(data).sort();
+        if (names.length === 0) { empty.style.display = 'block'; }
+        else { empty.style.display = 'none'; }
+
+        for (const name of names) {
+            const dev = data[name];
+            const actions = dev.actions || {};
+            let hookCount = 0;
+            let actionHTML = '';
+
+            const actionNames = Object.keys(actions).sort();
+            if (actionNames.length === 0) {
+                actionHTML = '<div class="empty">No webhooks yet. Click "Add Webhook" to add eWeLink scene URLs.</div>';
+            }
+            for (const action of actionNames) {
+                const a = actions[action];
+                hookCount += a.count;
+                let rows = '';
+                a.webhooks.forEach((url, i) => {
+                    const isNext = (i === a.next_index) ? '<span style="color:var(--yellow)">▶ next</span>' : '';
+                    rows += `<div class="webhook-row">
+                        <span class="webhook-idx">#${i + 1}</span>
+                        <span class="webhook-url" title="${url}">${url}</span>
+                        ${isNext}
+                        <button class="btn btn-danger btn-sm" onclick="removeWebhook('${name}','${action}','${url.replace(/'/g, "\\'")}')">✕</button>
+                    </div>`;
+                });
+                actionHTML += `<div class="action-block">
+                    <div class="action-header">
+                        <span class="action-name">${action}</span>
+                        <span class="badge">${a.count} webhook(s) · next: #${a.next_index + 1}</span>
+                    </div>
+                    ${rows}
+                    <div style="margin-top:0.5rem">
+                        <button class="btn btn-success btn-sm" onclick="triggerDevice('${name}','${action}')">▶ Trigger ${action}</button>
+                    </div>
+                </div>`;
+            }
+            totalHooks += hookCount;
+
+            list.innerHTML += `<div class="card">
+                <div class="card-header">
+                    <span class="device-name">${name}</span>
+                    <div style="display:flex;gap:0.5rem;align-items:center">
+                        <select onchange="changeStrategy('${name}', this.value)" style="font-size:0.75rem">
+                            <option value="round-robin" ${dev.strategy === 'round-robin' ? 'selected' : ''}>round-robin</option>
+                            <option value="random" ${dev.strategy === 'random' ? 'selected' : ''}>random</option>
+                        </select>
+                        <button class="btn btn-primary btn-sm" onclick="openAddWebhookModal('${name}')">+ Add Webhook</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteDevice('${name}')">Delete</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    ${actionHTML}
+                </div>
+            </div>`;
+        }
+
+        document.getElementById('stat-devices').textContent = names.length;
+        document.getElementById('stat-webhooks').textContent = totalHooks;
+    }
+
+    async function loadHistory() {
+        const data = await api('GET', '/api/history');
+        const list = document.getElementById('history-list');
+        const hist = data.history || [];
+        document.getElementById('stat-triggers').textContent = hist.length;
+        if (hist.length === 0) {
+            list.innerHTML = '<div class="empty">No triggers yet.</div>';
+            return;
+        }
+        let html = '';
+        for (const h of hist) {
+            const statusClass = h.ok ? 'status-ok' : 'status-fail';
+            const statusText = h.ok ? h.status : 'ERR';
+            const errInfo = h.ok ? '' : ` <span style="color:var(--red);font-size:0.7rem">(${h.error || ''})</span>`;
+            html += `<div class="history-row">
+                <span class="history-time">${h.time}</span>
+                <span class="history-device">${h.device}</span>
+                <span class="history-action">${h.action}</span>
+                <span class="history-status ${statusClass}">${statusText}</span>
+                <span class="history-webhook" title="${h.webhook}">#${h.index + 1} ${h.webhook}</span>
+                ${errInfo}
+            </div>`;
+        }
+        list.innerHTML = html;
+    }
+
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(o => {
+        o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); });
+    });
+
+    // Init
+    loadDevices();
+    setInterval(() => {
+        const activeTab = document.querySelector('.tab.active');
+        if (activeTab && activeTab.textContent === 'History') loadHistory();
+        else loadDevices();
+    }, 5000);
+    </script>
 </body>
 </html>

@@ -5,6 +5,10 @@ services:
       - "8000:8000"
     volumes:
       - ./config.yaml:/app/config.yaml
+      - proxy-data:/data
     environment:
       - LOG_LEVEL=INFO
     restart: unless-stopped
+
+volumes:
+  proxy-data:

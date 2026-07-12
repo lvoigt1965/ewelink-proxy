@@ -6,3 +6,4 @@ venv/
 *.egg-info/
 .env
 *.log
+state.json
