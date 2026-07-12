@@ -1,0 +1,8 @@
+.git
+git
+__pycache__
+*.pyc
+venv
+.venv
+node_modules
+*.md

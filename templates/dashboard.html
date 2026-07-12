@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eWeLink Webhook Proxy</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+        .subtitle { color: #94a3b8; font-size: 0.875rem; margin-bottom: 2rem; }
+        .card {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #334155;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .device-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #38bdf8;
+        }
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            background: #334155;
+            color: #cbd5e1;
+        }
+        .action-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.4rem 0;
+            font-size: 0.875rem;
+        }
+        .action-name {
+            font-weight: 600;
+            color: #4ade80;
+            min-width: 60px;
+        }
+        .webhook-count { color: #94a3b8; }
+        .next-idx { color: #fbbf24; }
+        .stats {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-box {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            text-align: center;
+        }
+        .stat-num { font-size: 1.5rem; font-weight: 700; color: #38bdf8; }
+        .stat-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; }
+        code {
+            background: #334155;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #f1f5f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>⚡ eWeLink Webhook Proxy</h1>
+    <p class="subtitle">Load-balancing proxy for eWeLink device webhooks</p>
+
+    <div class="stats">
+        <div class="stat-box">
+            <div class="stat-num">{{ total_devices }}</div>
+            <div class="stat-label">Devices</div>
+        </div>
+    </div>
+
+    {% for d in devices %}
+    <div class="card">
+        <div class="card-header">
+            <span class="device-name">{{ d.device }} / {{ d.action }}</span>
+            <span class="badge">{{ d.strategy }}</span>
+        </div>
+        <div class="action-row">
+            <span class="action-name">{{ d.action }}</span>
+            <span class="webhook-count">{{ d.count }} webhook(s)</span>
+            <span class="next-idx">next: #{{ d.next_index }}</span>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% if not devices %}
+    <div class="card">
+        <p>No devices configured. Edit <code>config.yaml</code> and reload.</p>
+    </div>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,29 @@
+# eWeLink Webhook Proxy Configuration
+# ============================================================
+# Each device can have multiple webhooks per action.
+# The proxy will distribute requests across them using
+# the configured strategy (round-robin or random).
+#
+# IMPORTANT: Quote action keys like "on" and "off" —
+# YAML treats bare on/off as booleans!
+#
+# Structure:
+#   devices:
+#     <device_name>:
+#       strategy: round-robin   # or: random
+#       actions:
+#         "on":
+#           - https://api.ewelink.com/webhook/XXXX
+#         "off":
+#           - https://api.ewelink.com/webhook/YYYY
+
+devices:
+  lamp:
+    strategy: round-robin
+    actions:
+      "on":
+        - https://api.ewelink.com/webhook/REPLACE_ME_ON_1
+        - https://api.ewelink.com/webhook/REPLACE_ME_ON_2
+      "off":
+        - https://api.ewelink.com/webhook/REPLACE_ME_OFF_1
+        - https://api.ewelink.com/webhook/REPLACE_ME_OFF_2
