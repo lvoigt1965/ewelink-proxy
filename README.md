@@ -29,18 +29,18 @@ Each call to the proxy selects the next webhook via **round-robin** or **random*
 docker-compose up -d
 ```
 
-The proxy will be available on port `8000`. Open `http://<host>:8000/` for the management UI.
+The proxy will be available on port `8001`. Open `http://<host>:8001/` for the management UI.
 
 ### Local Development
 
 ```bash
 pip install -r requirements.txt
-uvicorn app:app --reload --port 8000
+uvicorn app:app --reload --port 8001
 ```
 
 ## Management UI
 
-Navigate to `http://<host>:8000/` to access the dashboard.
+Navigate to `http://<host>:8001/` to access the dashboard.
 
 ### Devices Tab
 
@@ -95,10 +95,10 @@ The config file is **hot-reloaded** — just save changes, no restart needed.
 
 ```bash
 # Turn lamp on (round-robin selects next webhook)
-curl http://proxy:8000/trigger/lamp/on
+curl http://proxy:8001/trigger/lamp/on
 
 # Turn lamp off
-curl http://proxy:8000/trigger/lamp/off
+curl http://proxy:8001/trigger/lamp/off
 ```
 
 ## Persistence

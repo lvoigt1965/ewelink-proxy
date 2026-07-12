@@ -2,7 +2,7 @@ services:
   ewelink-proxy:
     build: .
     ports:
-      - "8000:8000"
+      - "8001:8001"
     volumes:
       - ./config.yaml:/app/config.yaml
       - proxy-data:/data
