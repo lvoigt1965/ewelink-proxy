@@ -293,7 +293,7 @@ async def trigger(device: str, request: Request):
     webhook_url, idx_used = select_webhook(device, pool, strategy, state_mgr)
 
     method = request.method
-    headers = {"User-Agent": "ewelink-proxy/3.0"}
+    headers = {}
     params = dict(request.query_params)
 
     ts = time.time()
@@ -308,7 +308,8 @@ async def trigger(device: str, request: Request):
                 resp = await client.post(webhook_url, headers=headers, params=params, content=body_bytes)
 
         status = resp.status_code
-        logger.info(f"Response: {device} status={status}")
+        ewelink_body = resp.text[:500] if resp.text else ""
+        logger.info(f"Response: {device} status={status} body={ewelink_body}")
 
         entry = {
             "timestamp": ts,
@@ -328,6 +329,7 @@ async def trigger(device: str, request: Request):
             "webhook": webhook_url,
             "index": idx_used,
             "ewelink_status": status,
+            "ewelink_response": ewelink_body,
         })
     except httpx.TimeoutException:
         logger.error(f"Timeout: {webhook_url}")
