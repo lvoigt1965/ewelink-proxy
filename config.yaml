@@ -1,4 +1,0 @@
-# eWeLink Webhook Proxy Configuration
-# Manage via web UI at http://<host>:8182/ or edit this file directly.
-
-devices: {}

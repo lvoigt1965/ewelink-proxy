@@ -1,0 +1,5 @@
+# eWeLink Webhook Proxy Configuration
+# Copy this file to config.yaml and configure your devices.
+# Or just use the web UI at http://<host>:8182/ — it writes to config.yaml directly.
+
+devices: {}

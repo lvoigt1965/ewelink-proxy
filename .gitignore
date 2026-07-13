@@ -9,3 +9,4 @@ ewelink-venv/
 *.log
 state.json
 server.log
+config.yaml
