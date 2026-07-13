@@ -111,6 +111,24 @@
         .toast.show { opacity: 1; transform: translateY(0); }
         .toast.success { border-color: var(--green); color: var(--green); }
         .toast.error { border-color: var(--red); color: var(--red); }
+        .url-bar {
+            display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+        }
+        .url-item {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 8px; padding: 0.5rem 0.75rem; cursor: pointer;
+            display: flex; align-items: center; gap: 0.5rem; transition: border-color 0.15s;
+            flex: 1; min-width: 200px;
+        }
+        .url-item:hover { border-color: var(--accent); }
+        .url-label {
+            font-size: 0.7rem; color: var(--muted); text-transform: uppercase;
+            font-weight: 600; white-space: nowrap;
+        }
+        .url-item code {
+            font-size: 0.75rem; color: var(--accent); overflow: hidden;
+            text-overflow: ellipsis; white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -120,6 +138,21 @@
             <p class="subtitle">Load-balancing proxy for eWeLink device webhooks</p>
         </div>
         <button class="btn btn-primary" onclick="openAddDeviceModal()">+ Add Device</button>
+    </div>
+
+    <div class="url-bar">
+        <div class="url-item" onclick="copyUrl(this, '{{ base_url }}/')" title="Click to copy">
+            <span class="url-label">Web UI</span>
+            <code>{{ base_url }}/</code>
+        </div>
+        <div class="url-item" onclick="copyUrl(this, '{{ base_url }}/trigger/{device}')" title="Click to copy">
+            <span class="url-label">Trigger</span>
+            <code>{{ base_url }}/trigger/{device}</code>
+        </div>
+        <div class="url-item" onclick="copyUrl(this, '{{ base_url }}/health')" title="Click to copy">
+            <span class="url-label">Health</span>
+            <code>{{ base_url }}/health</code>
+        </div>
     </div>
 
     <div class="stats-row">
@@ -198,6 +231,14 @@
         }
         const resp = await fetch(path, opts);
         return resp.json();
+    }
+
+    function copyUrl(el, url) {
+        navigator.clipboard.writeText(url).then(() => {
+            toast('Copied: ' + url, 'success');
+        }).catch(() => {
+            toast('Copy failed', 'error');
+        });
     }
 
     function toast(msg, type) {

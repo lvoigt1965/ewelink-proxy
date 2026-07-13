@@ -195,7 +195,8 @@ templates = Jinja2Templates(directory="templates")
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
-    return templates.TemplateResponse(request, "dashboard.html", {})
+    base_url = str(request.base_url).rstrip("/")
+    return templates.TemplateResponse(request, "dashboard.html", {"base_url": base_url})
 
 
 @app.get("/health")
