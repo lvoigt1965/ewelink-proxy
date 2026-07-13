@@ -294,7 +294,6 @@ async def trigger(device: str, request: Request):
 
     method = request.method
     headers = {}
-    params = dict(request.query_params)
 
     ts = time.time()
     logger.info(f"Trigger: {device} [{strategy}] -> {webhook_url} (index {idx_used})")
@@ -302,10 +301,10 @@ async def trigger(device: str, request: Request):
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             if method == "GET":
-                resp = await client.get(webhook_url, headers=headers, params=params)
+                resp = await client.get(webhook_url, headers=headers)
             else:
                 body_bytes = await request.body()
-                resp = await client.post(webhook_url, headers=headers, params=params, content=body_bytes)
+                resp = await client.post(webhook_url, headers=headers, content=body_bytes)
 
         status = resp.status_code
         ewelink_body = resp.text[:500] if resp.text else ""
