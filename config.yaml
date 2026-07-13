@@ -1,10 +1,4 @@
 # eWeLink Webhook Proxy Configuration
-# ============================================================
-# This file is the source of truth for device/webhook mappings.
-# You can manage everything via the web UI at http://<host>:8000/
-# or edit this file directly — changes are hot-reloaded.
-#
-# IMPORTANT: Quote action keys like "on" and "off" —
-# YAML treats bare on/off as booleans!
+# Manage via web UI at http://<host>:8182/ or edit this file directly.
 
 devices: {}
